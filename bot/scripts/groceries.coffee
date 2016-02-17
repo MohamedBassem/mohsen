@@ -30,7 +30,6 @@ refresh_list = (robot) ->
 
 save_list = (robot, list) ->
   list = yaml.dump(list)
-  console.log(list)
   fs.writeFile '../list.yml', list, (err) -> console.log(err)
   refresh_list(robot)
 
@@ -78,12 +77,12 @@ add_order = (robot, res, items, my_list) ->
       for i in avail
         name = id_to_name[i["ID"]]
         if cart[name]
-          cart[name]["count"] += my_list[name]["count"]
+          cart[name]["count"] = parseInt(cart[name]["count"], 10) + parseInt(my_list[name]["count"], 10)
         else
           cart[name] = {
             id: my_list[name]["id"],
             name: my_list[name]["name"],
-            count: my_list[name]["count"]
+            count: parseInt(my_list[name]["count"], 10)
           }
       robot.brain.set('cart', cart)
       cart_str = ("  #{i["count"]} x #{i["name"]}" for k, i of cart).join("\n")
@@ -103,7 +102,7 @@ module.exports = (robot) ->
     res.reply "This conversation never happened."
 
   robot.respond /remember (.*) of (.*) as (.*) which is (.*)/i, (res) ->
-    count = res.match[1]
+    count = parseInt(res.match[1], 10)
     id = res.match[2]
     key = res.match[3]
     name = res.match[4]
@@ -140,6 +139,16 @@ module.exports = (robot) ->
       "WarehouseId": 1,
       "EnterpriseDiscount": null,
       "UserId": process.env.KNOCKMART_USERID or "",
+      "PaymentMethod":{
+        "ID":1,
+        "Type":"Cash on delivery",
+        "TypeAr":"نقدي عند الاستلام",
+        "CssClass":"cash-on-delivery",
+        "isSelected":true
+      },
+      "FromWallet":0,
+      "Lang":1,
+      "IsMobileApp":false,
       "Items": ({"Id": i["id"], "Qty": i["count"], "Coupon": null} for k, i of cart)
     })
     robot.http("http://knockmart.com/Home/Order")
