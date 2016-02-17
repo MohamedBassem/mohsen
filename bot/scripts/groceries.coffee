@@ -28,6 +28,12 @@ refresh_list = (robot) ->
   robot.brain.set('my_list', my_list)
   return my_list
 
+save_list = (robot, list) ->
+  list = yaml.dump(list)
+  console.log(list)
+  fs.writeFile '../list.yml', list, (err) -> console.log(err)
+  refresh_list(robot)
+
 load_list = (robot) ->
   my_list = robot.brain.get("my_list")
   if my_list == null
@@ -96,6 +102,15 @@ module.exports = (robot) ->
     robot.brain.set('cart', {})
     res.reply "This conversation never happened."
 
+  robot.respond /remember (.*) of (.*) as (.*) which is (.*)/i, (res) ->
+    count = res.match[1]
+    id = res.match[2]
+    key = res.match[3]
+    name = res.match[4]
+    list = load_list(robot)
+    list[key] = {"name": name, "count": count, "id": id}
+    save_list(robot, list)
+
   robot.respond /(?:pls|please|plz)?\s*(?:order|add)\s+everything\s+except\s+(.*)/i, (res) ->
     my_list = load_list(robot)
     order_sentence = res.match[1]
@@ -104,7 +119,7 @@ module.exports = (robot) ->
       res.reply "What was that? Are you sure its in my list?" + "\n" + show_list(load_list(robot))
       return
     add_order(robot, res, items, my_list)
-    
+
   robot.respond /(?:pls|please|plz)?\s*(?:order|add)\s+(?!everything except)\s*(.*)/i, (res) ->
     my_list = load_list(robot)
     order_sentence = res.match[1]
