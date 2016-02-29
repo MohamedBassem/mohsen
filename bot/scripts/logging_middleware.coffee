@@ -6,8 +6,8 @@ module.exports = (robot) ->
     next()
 
   robot.responseMiddleware (context, next, done) ->
-    if context.strings != undefined
+    if context.strings != undefined and context.response.message != undefined
       sanitized_strings = x.replace(/\r?\n|\r/g, "\\n") for x in context.strings
-      robot.logger.info "MESSAGE RESPONDED Hubot : #{sanitized_strings}"
+      robot.logger.info "MESSAGE RESPONDED Hubot in #{context.response.message.room} : #{sanitized_strings}"
     next()
 
