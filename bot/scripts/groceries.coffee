@@ -8,6 +8,7 @@
 #   hubot please (order|add) <groceries> - adds the groceries to cart if they are in stock
 #   hubot please (order|add) everything except <excluded-groceries> - adds everything except what is mentioned
 #   hubot place order - places an order with the groceries currently in the cart
+#   hubot remember <count> of <knockmart_id> as <short name> which is <long name>
 #   hubot show cart - shows the items currently in the groceries cart
 #   hubot show list - shows all items in the full groceries list
 #   hubot (clear|empty) cart - clears the groceries cart
@@ -66,6 +67,7 @@ add_order = (robot, res, items, my_list) ->
     "WarehouseId": 1,
     "Items": items.map (i) -> {"ID": i["id"]}
   })
+  # TODO: Load headers in a better way that hardcoding them
   robot.http("http://knockmart.com/Home/CheckAvailability")
     .header('Content-Type', 'application/json;charset=UTF-8')
     .header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36")
@@ -151,6 +153,7 @@ module.exports = (robot) ->
       "IsMobileApp":false,
       "Items": ({"Id": i["id"], "Qty": i["count"], "Coupon": null} for k, i of cart)
     })
+    # TODO: Refactor this post request with the one above in `add_order`
     robot.http("http://knockmart.com/Home/Order")
       .header('Content-Type', 'application/json;charset=UTF-8')
       .header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36")
