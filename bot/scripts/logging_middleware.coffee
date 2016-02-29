@@ -1,7 +1,8 @@
 module.exports = (robot) ->
   robot.receiveMiddleware (context, next, done) ->
     if context.response.message != undefined and context.response.message.text?.match(robot.respondPattern(''))
-      robot.logger.info "MESSAGE RECEIVED #{context.response.message.user.name} in #{context.response.message.room} : #{context.response.message.text}"
+      sanitized_text = context.response.message.text?.replace(/\r?\n|\r/g, "\\n")
+      robot.logger.info "MESSAGE RECEIVED #{context.response.message.user.name} in #{context.response.message.room} : #{sanitized_text}"
     next()
 
   robot.responseMiddleware (context, next, done) ->
